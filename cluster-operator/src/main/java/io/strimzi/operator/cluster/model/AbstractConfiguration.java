@@ -22,6 +22,10 @@ import static java.util.Arrays.asList;
 public abstract class AbstractConfiguration {
     private static final ReconciliationLogger LOGGER = ReconciliationLogger.create(AbstractConfiguration.class.getName());
 
+    /**
+     * Configuration key to be set to true to allow using forbidden properties to be set. Using this property could cause extensive damage to your deployment and is to be done so at your own risk.
+     */
+    private static final String ALLOW_FORBIDDEN_PROP = "allow.forbidden";
     private final OrderedProperties options = new OrderedProperties();
 
     /**
@@ -127,7 +131,12 @@ public abstract class AbstractConfiguration {
      * @param forbiddenPrefixExceptions Exceptions excluded from forbidden prefix options checking
      */
     private void filterForbidden(Reconciliation reconciliation, List<String> forbiddenPrefixes, List<String> forbiddenPrefixExceptions)   {
-        options.filter(k -> forbiddenPrefixes.stream().anyMatch(s -> {
+        boolean allowForbidden = options.asMap().entrySet().stream()
+                .anyMatch(e -> e.getKey().equals(ALLOW_FORBIDDEN_PROP) && e.getValue().equalsIgnoreCase("true"));
+
+        List<String> revisedForbiddenPrefixes = allowForbidden ? Collections.singletonList(ALLOW_FORBIDDEN_PROP) : forbiddenPrefixes;
+
+        options.filter(k -> revisedForbiddenPrefixes.stream().anyMatch(s -> {
             boolean forbidden = k.toLowerCase(Locale.ENGLISH).startsWith(s);
             if (forbidden) {
                 if (forbiddenPrefixExceptions.contains(k))
