@@ -131,8 +131,8 @@ public abstract class AbstractConfiguration {
      * @param forbiddenPrefixExceptions Exceptions excluded from forbidden prefix options checking
      */
     private void filterForbidden(Reconciliation reconciliation, List<String> forbiddenPrefixes, List<String> forbiddenPrefixExceptions)   {
-        boolean allowForbidden = options.asMap().entrySet().stream()
-                .anyMatch(e -> e.getKey().equals(ALLOW_FORBIDDEN_PROP) && e.getValue().equalsIgnoreCase("true"));
+        String allowForbiddenProp = options.asMap().get(ALLOW_FORBIDDEN_PROP);
+        boolean allowForbidden = allowForbiddenProp != null && allowForbiddenProp.equalsIgnoreCase(Boolean.TRUE.toString());
 
         List<String> revisedForbiddenPrefixes = allowForbidden ? Collections.singletonList(ALLOW_FORBIDDEN_PROP) : forbiddenPrefixes;
 
